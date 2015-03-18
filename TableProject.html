@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Table Project</title>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="http://lightswitch05.github.io/table-to-json/javascripts/jquery.tabletojson.min.js"></script>
+
+    <script>
+        function addColumn(tableId)
+        {
+            document.getElementById("DialogBox").showModal();
+        }
+
+        function closeDialogBox() {
+            document.getElementById("DialogBox").close();
+        }
+
+        function isNumberKey(event) {
+            var charCode = (event.which) ? event.which : event.keyCode;
+            if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        function saveRow(table) {
+            var rowCount=table.rows.length;
+            var row=table.insertRow(rowCount);
+            if (rowCount %2 == 0) {
+                row.classList.add("info");
+            }
+            else {
+                row.classList.add("success");
+            }
+            var cell_a=row.insertCell(0);
+            var element=document.createElement("input");
+            element.type="checkbox";element.name="chkbox[]";
+            cell_a.appendChild(element);
+            var cell_b=row.insertCell(1);
+            cell_b.innerHTML=document.getElementById("ColumnName").value;
+            var cell_c=row.insertCell(2);
+            cell_c.type = document.getElementById("ColumnType").value;
+            cell_c.innerHTML=document.getElementById("ColumnType").value;
+            var cell_d=row.insertCell(3); cell_d.innerHTML=document.getElementById("ColumnEditable").value;
+            closeDialogBox();
+        }
+
+        function deleteRow(table) {
+            var rowCount=table.rows.length;
+            for(var i=0;i<rowCount;i++)
+            {
+                var row=table.rows[i];
+                var chkbox = row.cells[0].childNodes[0];
+                if(null!= chkbox && true==chkbox.checked) {
+                    table.deleteRow(i);
+                    rowCount--;i--;
+                }
+            }
+        }
+
+        function deleteColumn(table1, table2) {
+
+            var rowCountTable2 = table2.rows.length;
+            var rowCountTable1 = table1.rows.length;
+
+            for (var i = 0; i < rowCountTable1; i++) {
+                var row = table1.rows[i];
+                var isEditable = row.cells[3].innerHTML;
+                var chBox = row.cells[0].childNodes[0];
+                if (null != chBox && true == chBox.checked && isEditable== "Yes") {
+                    if (rowCountTable1 <= 1) {
+                        break;
+                    }
+                    table1.deleteRow(i);
+                    for (var j = 0; j < rowCountTable2; j++) {
+                        table2.rows[j].deleteCell(i);
+                    }
+                    rowCountTable1--;
+                    i--;
+                }
+            }
+        }
+
+        function secondTableUpdate(table)
+        {
+            var head = table.tHead;
+            for (var j=0; j<head.rows.length; j++) {
+                var head_tag = document.createElement('th');
+                head.rows[j].appendChild(head_tag);
+                head_tag.type = document.getElementById("ColumnName").value;
+                head_tag.innerHTML = document.getElementById("ColumnName").value;
+            }
+            var body_obj = table.tBodies[0];
+            for (var i=0; i<body_obj.rows.length; i++) {
+                var newCell = body_obj.rows[i].insertCell(-1);
+                var valueType =document.getElementById("ColumnType").value ;
+                if(valueType == 'String' ){
+                    newCell.innerHTML = 'String';
+                }
+                else if(valueType == 'Number'){
+                    newCell.innerHTML = '1001';
+                }
+                else if(valueType == 'Boolean'){
+                    newCell.innerHTML = 'True' ;
+                }
+                else if (valueType == 'Date'){
+                    newCell.innerHTML = '22/05/2015' ;
+                }
+            }
+        }
+
+        function addRows(table, table1) {
+            var rowCount=table.rows.length;
+            var colCount = table.rows[0].cells.length;
+            var row=table.insertRow(rowCount);
+            if (rowCount %2 == 0) {
+                row.classList.add("info");
+            }
+            else {
+                row.classList.add("success");
+            }
+
+            var cell_a=row.insertCell(0);
+            var element=document.createElement("input");
+            element.type="checkbox";element.name="chkbox[]";
+            cell_a.appendChild(element);
+
+            for (var i=1; i<colCount; i++) {
+                var td1= row.insertCell(i);
+                var type_of = table1.rows[i].cells[2].innerHTML;
+                if (type_of == "Number") {
+                    td1.innerHTML ="<INPUT id='numberOnly' onkeypress='return isNumberKey(event)'type='text' name='numberOnly'>"
+                }
+                else if (type_of == "String") {
+                    var element2 = document.createElement("input");
+                    element2.type="String";element2.name="string";
+                    td1.appendChild(element2);
+                }
+                else if (type_of == "Boolean") {
+
+                    td1.innerHTML = "<select name='Editable'' ><option value='Yes'>True</option><option value='No'>False</option></select>" ;
+                }
+                else if (type_of == "Date") {
+                    var element2 = document.createElement("input");
+                    element2.type="Date";element.name="date";
+                    td1.appendChild(element2);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<dialog id="DialogBox">
+    <div class="col-md-12">
+        <div class="row form-group">
+            <div class="col-md-4">
+                Column Name
+            </div>
+            <div class="col-md-8">
+                <input type="text" id="ColumnName"  class="form-control" />
+            </div>
+        </div>
+
+        <div class="row form-group">
+            <div class="col-md-4">
+                Column Type
+            </div>
+            <div class="col-md-8">
+
+                <select id="ColumnType" class="form-control">
+                    <option value="Number">Number</option>
+                    <option value="String">String</option>
+                    <option value="Date">Date</option>
+                    <option value="Boolean">Boolean</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row form-group">
+            <div class="col-md-4">
+                Editable
+            </div>
+            <div class="col-md-8">
+                <select name="Editable" id="ColumnEditable">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <button id="SaveColumn" onclick="saveRow(table1); secondTableUpdate(table2)" class="btn btn-primary pull-left small-margin-right">Add New Column</button>
+       </div>
+        <div class="col-md-6">
+            <button  onclick="closeDialogBox()" class="btn btn-primary pull-left small-margin-right">Close Without Adding</button>
+        </div>
+    </div>
+</dialog>
+
+<div class="container">
+    <h3> Column Master </h3>
+    <button type="submit" class="btn btn-primary" onclick="addColumn(table1)" id="AddRow">Add Column </button>
+    <button type="submit" class="btn btn-primary" onclick="deleteColumn(table1,table2)" id="DeleteColumns">Delete Selected Column </button>
+    <table id="table1" class="table table-bordered">
+        <thead>
+        <tr class ="info">
+            <th>Select</th>
+            <th>Column Name</th>
+            <th>Column Type</th>
+            <th> Is Editable</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="success">
+            <td><input type="checkbox" class="checkbox" name="ck1"></td>
+            <td>Column 1</td>
+            <td  type="Number">Number</td>
+            <td>Yes</td>
+        </tr>
+        <tr class="info">
+            <td><input type="checkbox" name="ck2"></td>
+            <td>Column 2</td>
+            <td type="String">String</td>
+            <td>Yes</td>
+        </tr>
+        <tr class="success">
+            <td><input type="checkbox" name="ck3"></td>
+            <td>Column 3</td>
+            <td type ="Boolean">Boolean</td>
+            <td>Yes</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<div class="container">
+    <h3> Result Data Grid </h3>
+    <button type="submit" class="btn btn-primary" onclick="addRows(table2,table1)" id="AddColumn">Add Row</button>
+    <button type="submit" class="btn btn-primary" onclick="deleteRow(table2)"> Delete Row </button>
+    <button type="submit" class="btn btn-primary" id="exportJson" onclick="exportJson(table2)">Export to JSON </button>
+    <table id="table2" class="table table-bordered">
+        <thead>
+        <tr class ="info">
+            <th>Select</th>
+            <th>Column 1</th>
+            <th>Column 2</th>
+            <th>Column 3</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="success">
+            <td><input type="checkbox" class="checkbox" name="ck1"></td>
+            <td>1001</td>
+            <td>Hello </td>
+            <td> True </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $('#exportJson').click( function() {
+        var table = $('#table2').tableToJSON();
+        window.open("data:application/text," + JSON.stringify(table));
+        return false;
+    });
+</script>
+</body>
+</html>
